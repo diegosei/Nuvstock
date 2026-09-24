@@ -3,10 +3,11 @@ from fastapi_health import health
 
 from app.database import lifespan
 
-from .routers import customers
+from .routers import customers, products
 
 app = FastAPI(lifespan=lifespan)
 app.include_router(customers.router)
+app.include_router(products.router)
 
 
 @app.get("/")
