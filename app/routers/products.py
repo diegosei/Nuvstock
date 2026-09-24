@@ -15,6 +15,11 @@ router = APIRouter()
 )
 def create_product(product_data: ProductCreate, session: SessionDep):
     product = Product.model_validate(product_data.model_dump())
+    if product.price < 0 or product.stock < 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="price and stock can't be negative",
+        )
     session.add(product)
     session.commit()
     session.refresh(product)

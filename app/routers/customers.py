@@ -1,12 +1,11 @@
-from sqlite3 import IntegrityError
-
 from fastapi import APIRouter, HTTPException, status
+from sqlalchemy.exc import IntegrityError
 from sqlmodel import select
 
+from app.database import SessionDep
 from app.models.customers import Customer, CustomerCreate, CustomerUpdate
 
 router = APIRouter()
-from app.database import SessionDep
 
 
 @router.post(
@@ -31,13 +30,23 @@ def create_customer(customer_data: CustomerCreate, session: SessionDep):
 
 
 # select -> construye consulta. exec -> ejecuta consulta
-@router.get("/customers", response_model=list[Customer], tags=["customers"])
+@router.get(
+    "/customers",
+    response_model=list[Customer],
+    status_code=status.HTTP_200_OK,
+    tags=["customers"],
+)
 def read_list_customer(session: SessionDep):
     customer_list = session.exec(select(Customer)).all()
     return customer_list
 
 
-@router.get("/customers/{customer_id}", response_model=Customer, tags=["customers"])
+@router.get(
+    "/customers/{customer_id}",
+    response_model=Customer,
+    status_code=status.HTTP_200_OK,
+    tags=["customers"],
+)
 def read_customer_from_id(customer_id: int, session: SessionDep):
     customer = session.get(Customer, customer_id)
     if not customer:
@@ -47,7 +56,12 @@ def read_customer_from_id(customer_id: int, session: SessionDep):
     return customer
 
 
-@router.put("/customers/{customer_id}", response_model=Customer, tags=["customers"])
+@router.put(
+    "/customers/{customer_id}",
+    response_model=Customer,
+    status_code=status.HTTP_200_OK,
+    tags=["customers"],
+)
 def update_customer(
     customer_id: int, customer_data: CustomerUpdate, session: SessionDep
 ):
@@ -65,8 +79,8 @@ def update_customer(
 
 
 @router.delete(
-    "/customers",
-    response_model=Customer,
+    "/customers/{customer_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
     tags=["customers"],
 )
 def delete_customer(customer_id: int, session: SessionDep):
@@ -77,4 +91,3 @@ def delete_customer(customer_id: int, session: SessionDep):
         )
     session.delete(customer)
     session.commit()
-    return customer
