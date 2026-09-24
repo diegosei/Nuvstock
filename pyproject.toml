@@ -1,0 +1,24 @@
+[project]
+name = "project-nuvstock"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Diego Seitler", email = "main.das@proton.me" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi-health>=0.4.0",
+    "fastapi[standard]>=0.141.1",
+    "pytest>=9.1.1",
+    "python-dotenv>=1.2.3",
+    "ruff>=0.16.8",
+    "sqlmodel>=0.0.47",
+]
+
+[project.scripts]
+project-nuvstock = "project_nuvstock:main"
+
+[build-system]
+requires = ["uv_build>=0.12.13,<0.13.0"]
+build-backend = "uv_build"
