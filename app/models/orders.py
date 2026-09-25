@@ -11,6 +11,18 @@ class StatusEnum(str, Enum):
     CANCELLED = "cancelled"
 
 
+VALID_TRANSITIONS: dict[StatusEnum, set[StatusEnum]] = {
+    StatusEnum.PENDING: {StatusEnum.PAID, StatusEnum.CANCELLED},
+    StatusEnum.PAID: {StatusEnum.SHIPPED, StatusEnum.CANCELLED},
+    StatusEnum.SHIPPED: {StatusEnum.CANCELLED},
+    StatusEnum.CANCELLED: set(),
+}
+
+
+class OrderStatusUpdate(SQLModel):
+    status: StatusEnum
+
+
 class OrderItemBase(SQLModel):
     product_id: int = Field(foreign_key="product.id")
     quantity: int
@@ -34,13 +46,18 @@ class Order(OrderBase, table=True):
     items: list["OrderItem"] = Relationship(back_populates="order")
 
 
-# create individual items order
+class OrderRead(OrderBase):
+    id: int
+    customer_id: int
+    items: list["OrderItem"]
+    total: float
+
+
 class OrderItemCreate(SQLModel):
     product_id: int
     quantity: int
 
 
-# create full order
 class OrderCreate(SQLModel):
     customer_id: int
     items: list[OrderItemCreate]
