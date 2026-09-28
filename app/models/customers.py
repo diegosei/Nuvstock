@@ -20,4 +20,8 @@ class CustomerCreate(CustomerBase):
 
 
 class CustomerUpdate(CustomerBase):
-    pass
+    name: str | None = None
+    last_name: str | None = None
+    age: int | None = None
+    address: str | None = None
+    email: EmailStr | None = None

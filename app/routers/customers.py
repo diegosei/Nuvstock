@@ -23,7 +23,7 @@ def create_customer(customer_data: CustomerCreate, session: SessionDep):
         session.rollback()
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="This email isn't valid or already registered",
+            detail="This email is already registered",
         )
     session.refresh(customer)
     return customer
@@ -56,7 +56,7 @@ def read_customer_from_id(customer_id: int, session: SessionDep):
     return customer
 
 
-@router.put(
+@router.patch(
     "/customers/{customer_id}",
     response_model=Customer,
     status_code=status.HTTP_200_OK,
@@ -73,7 +73,14 @@ def update_customer(
     customer_data_dict = customer_data.model_dump(exclude_unset=True)
     customer.sqlmodel_update(customer_data_dict)
     session.add(customer)
-    session.commit()
+    try:
+        session.commit()
+    except IntegrityError:
+        session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="This email is already registered",
+        )
     session.refresh(customer)
     return customer
 

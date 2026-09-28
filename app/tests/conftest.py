@@ -35,6 +35,27 @@ def client_fixture(session: Session):
     app.dependency_overrides.clear()
 
 
+@pytest.fixture(name="customer_payload")
+def customer_payload_fixture():
+    return {
+        "name": "Homero",
+        "last_name": "Simpson",
+        "age": 36,
+        "address": "123 fake st.",
+        "email": "false_email@gmail.com",
+    }
+
+
+@pytest.fixture(name="create_customer")
+def create_customer_fixture(client):
+    def _create(payload: dict):
+        response = client.post("/customers", json=payload)
+        assert response.status_code == 201, response.text
+        return response.json()
+
+    return _create
+
+
 def test_read_customer_empty(client):
     response = client.get("/customers")
     assert response.status_code == 200
