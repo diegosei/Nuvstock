@@ -56,7 +56,16 @@ def create_customer_fixture(client):
     return _create
 
 
-def test_read_customer_empty(client):
-    response = client.get("/customers")
-    assert response.status_code == 200
-    assert response.json() == []
+@pytest.fixture(name="product_payload")
+def product_payload_fixture():
+    return {"name": "keyboard", "price": 45000, "stock": 5}
+
+
+@pytest.fixture(name="create_product")
+def create_product_fixture(client):
+    def _create(payload: dict):
+        response = client.post("/products", json=payload)
+        assert response.status_code == 201, response.text
+        return response.json()
+
+    return _create

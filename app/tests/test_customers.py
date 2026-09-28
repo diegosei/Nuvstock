@@ -1,3 +1,9 @@
+def test_read_customer_empty(client):
+    response = client.get("/customers")
+    assert response.status_code == 200
+    assert response.json() == []
+
+
 def test_create_customer(client, customer_payload):
     response = client.post("/customers", json=customer_payload)
     assert response.json()["name"] == customer_payload["name"]

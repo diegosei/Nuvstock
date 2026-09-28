@@ -52,7 +52,7 @@ def read_product(product_id: int, session: SessionDep):
     return product
 
 
-@router.put(
+@router.patch(
     "/products/{product_id}",
     response_model=Product,
     status_code=status.HTTP_200_OK,

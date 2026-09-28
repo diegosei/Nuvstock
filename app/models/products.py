@@ -3,8 +3,8 @@ from sqlmodel import Field, SQLModel
 
 class ProductBase(SQLModel):
     name: str
-    price: int
-    stock: int
+    price: int = Field(ge=0)
+    stock: int = Field(ge=0)
 
 
 class Product(ProductBase, table=True):
@@ -16,4 +16,6 @@ class ProductCreate(ProductBase):
 
 
 class ProductUpdate(ProductBase):
-    pass
+    name: str | None = None
+    price: int | None = Field(default=None, ge=0)
+    stock: int | None = Field(default=None, ge=0)

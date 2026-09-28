@@ -26,7 +26,7 @@ class OrderStatusUpdate(SQLModel):
 class OrderItemBase(SQLModel):
     product_id: int = Field(foreign_key="product.id")
     quantity: int
-    price_unit: float
+    price_unit: int
 
 
 class OrderItem(OrderItemBase, table=True):
