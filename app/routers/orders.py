@@ -24,6 +24,7 @@ router = APIRouter()
     response_model=OrderRead,
     status_code=status.HTTP_201_CREATED,
     tags=["orders"],
+    description="Validates available stock for each product (aggregating quantities if the same product appears more than once) and deducts it from inventory. If any product doesn't have enough stock, nothing is created.",
 )
 def creater_order(order_data: OrderCreate, session: SessionDep):
     customer = session.get(Customer, order_data.customer_id)
@@ -138,6 +139,7 @@ def read_order(order_id: int, session: SessionDep):
     response_model=Order,
     status_code=status.HTTP_200_OK,
     tags=["orders"],
+    description="Only allows valid transitions: pending→paid, pending→cancelled, paid→shipped, paid→cancelled. shipped and cancelled are final states.",
 )
 def update_order(order_id: int, status_data: OrderStatusUpdate, session: SessionDep):
     order = session.get(Order, order_id)

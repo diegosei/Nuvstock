@@ -14,7 +14,7 @@ class StatusEnum(str, Enum):
 VALID_TRANSITIONS: dict[StatusEnum, set[StatusEnum]] = {
     StatusEnum.PENDING: {StatusEnum.PAID, StatusEnum.CANCELLED},
     StatusEnum.PAID: {StatusEnum.SHIPPED, StatusEnum.CANCELLED},
-    StatusEnum.SHIPPED: {StatusEnum.CANCELLED},
+    StatusEnum.SHIPPED: set(),
     StatusEnum.CANCELLED: set(),
 }
 

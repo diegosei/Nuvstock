@@ -175,6 +175,7 @@ def test_read_order_non_existent_id(client, order_payload):
             "pending",
             400,
         ),  # shipped → pending (inválido, es estado final)
+        (["paid", "shipped"], "cancelled", 400),  # shipped → cancelled (inválido)
         (["cancelled"], "paid", 400),  # cancelled → paid (inválido, es estado final)
     ],
 )
@@ -206,3 +207,22 @@ def test_cancel_order_restores_stock(client, order_payload, product_payload):
 
     product_after = client.get(f"/products/{product_id}")
     assert product_after.json()["stock"] == product_payload["stock"]
+
+
+def test_cannot_cancel_shipped_order_or_restore_stock(
+    client, order_payload, product_payload
+):
+    product_id = order_payload["items"][0]["product_id"]
+    order = client.post("/orders", json=order_payload).json()
+
+    for status in ("paid", "shipped"):
+        response = client.patch(f"/orders/{order['id']}", json={"status": status})
+        assert response.status_code == 200
+
+    response = client.patch(
+        f"/orders/{order['id']}", json={"status": "cancelled"}
+    )
+    assert response.status_code == 400
+    assert client.get(f"/products/{product_id}").json()["stock"] == (
+        product_payload["stock"] - order_payload["items"][0]["quantity"]
+    )

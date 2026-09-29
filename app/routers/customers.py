@@ -29,7 +29,6 @@ def create_customer(customer_data: CustomerCreate, session: SessionDep):
     return customer
 
 
-# select -> construye consulta. exec -> ejecuta consulta
 @router.get(
     "/customers",
     response_model=list[Customer],
@@ -47,7 +46,7 @@ def read_list_customer(session: SessionDep):
     status_code=status.HTTP_200_OK,
     tags=["customers"],
 )
-def read_customer_from_id(customer_id: int, session: SessionDep):
+def read_customer(customer_id: int, session: SessionDep):
     customer = session.get(Customer, customer_id)
     if not customer:
         raise HTTPException(
