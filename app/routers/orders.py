@@ -1,6 +1,7 @@
-from datetime import datetime
+from datetime import date
 
 from fastapi import APIRouter, HTTPException, status
+from sqlmodel import select
 
 from app.database import SessionDep
 from app.models.customers import Customer
@@ -18,11 +19,9 @@ from app.models.products import Product
 router = APIRouter()
 
 
-# OrderCreate: customer_id / items: list[OrderItemCreate]
-# OrderItemCreate: product_id / quantity
 @router.post(
     "/orders",
-    response_model=Order,
+    response_model=OrderRead,
     status_code=status.HTTP_201_CREATED,
     tags=["orders"],
 )
@@ -33,12 +32,8 @@ def creater_order(order_data: OrderCreate, session: SessionDep):
             status_code=status.HTTP_404_NOT_FOUND, detail="customer not found"
         )
 
-    order = Order(
-        customer_id=customer.id,
-        status=StatusEnum.PENDING,
-        order_date=datetime.today(),  # noqa: DTZ002
-    )
-
+    products = {}
+    requested_quantities = {}
     for item in order_data.items:
         product = session.get(Product, item.product_id)
         if not product:
@@ -46,24 +41,69 @@ def creater_order(order_data: OrderCreate, session: SessionDep):
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"product {item.product_id} not found",
             )
-        if item.quantity > product.stock:
+
+        products[item.product_id] = product
+        requested_quantities[item.product_id] = (
+            requested_quantities.get(item.product_id, 0) + item.quantity
+        )
+
+    for product_id, quantity in requested_quantities.items():
+        if quantity > products[product_id].stock:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"not enough stock for product {item.product_id}",
+                detail=f"not enough stock for product {product_id}",
             )
 
+    order = Order(
+        customer_id=customer.id,
+        status=StatusEnum.PENDING,
+        order_date=date.today(),  # noqa: DTZ011
+    )
+
+    for item in order_data.items:
+        product = products[item.product_id]
         order_item = OrderItem(
             product_id=item.product_id, quantity=item.quantity, price_unit=product.price
         )
 
-    order.items.append(order_item)
-    product.stock -= item.quantity
-    session.add(product)
+        order.items.append(order_item)
+        product.stock -= item.quantity
+        session.add(product)
 
     session.add(order)
     session.commit()
     session.refresh(order)
-    return order
+
+    total = sum(item.quantity * item.price_unit for item in order.items)
+    return OrderRead(
+        id=order.id,
+        customer_id=order.customer_id,
+        status=order.status,
+        order_date=order.order_date,
+        items=order.items,
+        total=total,
+    )
+
+
+@router.get(
+    "/orders",
+    response_model=list[OrderRead],
+    status_code=status.HTTP_200_OK,
+    tags=["orders"],
+)
+def read_orders(session: SessionDep):
+    orders = session.exec(select(Order)).all()
+    return [
+        OrderRead(
+            status=order.status,
+            order_date=order.order_date,
+            id=order.id,
+            customer_id=order.customer_id,
+            items=order.items,
+            total=sum(item.quantity * item.price_unit for item in order.items),
+        )
+        for order in orders
+    ]
 
 
 @router.get(
@@ -93,7 +133,7 @@ def read_order(order_id: int, session: SessionDep):
     return order_read
 
 
-@router.put(
+@router.patch(
     "/orders/{order_id}",
     response_model=Order,
     status_code=status.HTTP_200_OK,

@@ -69,3 +69,25 @@ def create_product_fixture(client):
         return response.json()
 
     return _create
+
+
+@pytest.fixture(name="order_payload")
+def order_payload_fixture(
+    create_customer, create_product, customer_payload, product_payload
+):
+    customer = create_customer(customer_payload)
+    product = create_product(product_payload)
+    return {
+        "customer_id": customer["id"],
+        "items": [{"product_id": product["id"], "quantity": 1}],
+    }
+
+
+@pytest.fixture(name="create_order")
+def create_order_fixture(client):
+    def _create(payload: dict):
+        response = client.post("/orders", json=payload)
+        assert response.status_code == 201, response.text
+        return response.json()
+
+    return _create
