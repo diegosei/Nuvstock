@@ -1,6 +1,8 @@
 
 # NuvStock — Sistema de Gestión de Pedidos e Inventario
 
+**Demo en Railway:** [Explorar la documentación interactiva de la API](https://nuvstock-production.up.railway.app/docs). Servicio público para probar los endpoints de NuvStock.
+
 API REST desarrollada con Python y FastAPI para administrar clientes, productos, inventario y pedidos. Al registrar un pedido, comprueba y descuenta las existencias disponibles, conserva el precio aplicado a cada artículo y calcula el total a partir de sus líneas.
 
 El proyecto está pensado como una API backend de portfolio: además de operaciones CRUD, implementa reglas de negocio para stock, cancelaciones y transiciones de estado, con una suite de pruebas aislada de la base de datos local.
