@@ -26,7 +26,7 @@ router = APIRouter()
     tags=["orders"],
     description="Validates available stock for each product (aggregating quantities if the same product appears more than once) and deducts it from inventory. If any product doesn't have enough stock, nothing is created.",
 )
-def creater_order(order_data: OrderCreate, session: SessionDep):
+def create_order(order_data: OrderCreate, session: SessionDep):
     customer = session.get(Customer, order_data.customer_id)
     if not customer:
         raise HTTPException(

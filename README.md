@@ -5,7 +5,7 @@ API REST desarrollada con Python y FastAPI para administrar clientes, productos,
 
 El proyecto está pensado como una API backend de portfolio: además de operaciones CRUD, implementa reglas de negocio para stock, cancelaciones y transiciones de estado, con una suite de pruebas aislada de la base de datos local.
 
-> Este proyecto fue desarrollado por el autor con fines de aprendizaje y portfolio. Se utilizó IA como apoyo para consultas puntuales (dudas de conceptos, revisar código y detectar errores). El diseño, la implementación y las decisiones técnicas son propias. El README fue redactado con asistencia de IA a partir del contenido del proyecto.
+> Este proyecto fue desarrollado por el autor con fines de aprendizaje y portfolio. Se utilizó IA para consultas puntuales (dudas de conceptos, revisión de código y detección de errores), para generar el script de seed y para redactar este README. El diseño, la implementación del resto del proyecto y las decisiones técnicas son propias.
 
 ## Tecnologías
 
@@ -71,16 +71,16 @@ erDiagram
 
 ## Instalación y ejecución local
 
-Desde la raíz del repositorio:
-
-1. Clona el repositorio y entra en el directorio del proyecto.
+Cloná el repositorio y entrá en su directorio:
 
 	 ```bash
-	 git clone <URL_DEL_REPOSITORIO>
-	 cd project_nuvstock
+	 git clone https://github.com/diegosei/Nuvstock.git
+	 cd Nuvstock
 	 ```
 
-2. Crea el archivo de entorno a partir de la plantilla incluida.
+Desde la raíz del proyecto:
+
+1. Creá el archivo de entorno a partir de la plantilla incluida.
 
 	 ```bash
 	 cp .env.example .env
@@ -92,35 +92,47 @@ Desde la raíz del repositorio:
 	 DATABASE_URL=sqlite:///db.sqlite3
 	 ```
 
-	 `app/database.py` carga `.env` con `python-dotenv`; durante el inicio de la aplicación se crean las tablas del modelo.
+	 `app/database.py` carga `.env` con `python-dotenv`; al iniciar la aplicación se crean las tablas del modelo.
 
-3. Sincroniza las dependencias y crea el entorno virtual.
+2. Sincronizá las dependencias y creá el entorno virtual.
 
 	 ```bash
 	 uv sync --dev
 	 ```
 
-4. Inicia el servidor de desarrollo.
+3. Iniciá el servidor de desarrollo.
 
 	 ```bash
 	 uv run fastapi dev app/main.py
 	 ```
 
-	 La API queda disponible normalmente en `http://127.0.0.1:8000`. La documentación interactiva de Swagger UI está en `/docs` y ReDoc en `/redoc`.
+	 La API queda disponible en `http://127.0.0.1:8000`. La documentación interactiva de Swagger UI está en `/docs` y ReDoc en `/redoc`.
+
+## Probar la API
+
+Importá `postman_collection.json` en Postman para usar las solicitudes preconfiguradas. La colección ya define `baseUrl` como `http://127.0.0.1:8000`.
+
+Para cargar datos de ejemplo, ejecutá desde la raíz del proyecto. El seed borra y recrea las tablas de la base configurada, así que elimina los datos que ya tenga:
+
+```bash
+uv run python -m scripts.seed
+```
 
 ## Pruebas
 
-Ejecuta toda la suite desde la raíz del repositorio:
+Ejecutá toda la suite desde la raíz del repositorio:
 
 ```bash
 uv run pytest -v
 ```
 
-Las pruebas usan una base SQLite en memoria (`StaticPool`) y sustituyen `get_session` mediante `app.dependency_overrides`. Así no modifican `db.sqlite3`. Cubren CRUD, validaciones, errores, descuento y restauración de stock, atomicidad al crear pedidos y transiciones de estado válidas e inválidas parametrizadas.
+Las pruebas usan una base SQLite en memoria (`StaticPool`) y sustituyen `get_session` mediante `app.dependency_overrides`, por lo que no modifican `db.sqlite3`. Cubren CRUD, validaciones, errores, descuento y restauración de stock, atomicidad al crear pedidos y transiciones de estado válidas e inválidas.
 
 ## API
 
 Todas las rutas están disponibles bajo la raíz del servidor, sin prefijo adicional. FastAPI publica el esquema OpenAPI en `/openapi.json`.
+
+Además, `GET /` devuelve `{"message":"ok"}` y `GET /health` ofrece una comprobación básica del servicio.
 
 ### Customers
 
@@ -175,7 +187,7 @@ El correo debe ser válido y único. Un correo duplicado produce `400 Bad Reques
 | `PATCH` | `/products/{product_id}` | Actualizar campos enviados | `200 OK`, `404` si no existe |
 | `DELETE` | `/products/{product_id}` | Eliminar producto | `204 No Content`, `404` si no existe |
 
-`price` y `stock` son valores enteros no negativos. Para crear un producto, envía por ejemplo `{"name":"Teclado","price":45000,"stock":5}`.
+`price` y `stock` son valores enteros no negativos. Para crear un producto, enviá por ejemplo `{"name":"Teclado","price":45000,"stock":5}`.
 
 ### Orders
 
@@ -186,7 +198,7 @@ El correo debe ser válido y único. Un correo duplicado produce `400 Bad Reques
 | `GET` | `/orders/{order_id}` | Obtener pedido con total calculado | `200 OK`, `404` si no existe |
 | `PATCH` | `/orders/{order_id}` | Cambiar estado | `200 OK`, `400` si la transición no está permitida, `404` si no existe |
 
-No existe `DELETE` para pedidos. El servidor asigna el estado inicial `pending` y la fecha del día; cada `price_unit` se toma del precio vigente en el servidor. Antes de probar este flujo, crea un cliente y un producto, y reemplaza sus identificadores por los devueltos por la API.
+No existe `DELETE` para pedidos. El servidor asigna el estado inicial `pending` y la fecha del día; cada `price_unit` se toma del precio vigente en el servidor. Antes de probar este flujo, creá un cliente y un producto, y reemplazá sus identificadores por los devueltos por la API.
 
 Crear un pedido:
 
@@ -287,6 +299,9 @@ Respuesta `200 OK`:
 │       ├── test_customers.py
 │       ├── test_orders.py
 │       └── test_products.py
+├── postman_collection.json
+├── scripts/
+│   └── seed.py
 ├── src/
 │   └── project_nuvstock/
 │       └── __init__.py
