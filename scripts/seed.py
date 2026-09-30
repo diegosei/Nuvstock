@@ -124,7 +124,9 @@ def create_orders(session: Session, customers: list[Customer], products: list[Pr
     created = 0
     for customer, items, final_status in orders_plan:
         order = Order(
-            customer_id=customer.id, status=StatusEnum.PENDING, order_date=date.today()
+            customer_id=customer.id,
+            status=StatusEnum.PENDING,
+            order_date=date.today(),  # noqa: DTZ011
         )
 
         for product, quantity in items:

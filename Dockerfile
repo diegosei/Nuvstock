@@ -15,10 +15,6 @@ RUN uv sync --frozen --no-dev --no-install-project
 COPY app ./app
 COPY scripts ./scripts
 
-RUN mkdir -p /data
-
-ENV DATABASE_URL=sqlite:////data/db.sqlite3
-
 EXPOSE 8000
 
 CMD ["fastapi", "run", "app/main.py", "--host", "0.0.0.0", "--port", "8000"]
