@@ -13,13 +13,16 @@ El proyecto está pensado como una API backend de portfolio: además de operacio
 ![FastAPI](https://img.shields.io/badge/FastAPI-API-009688?logo=fastapi&logoColor=white)
 ![SQLModel](https://img.shields.io/badge/SQLModel-SQLAlchemy%20%2B%20Pydantic-59666C)
 ![SQLite](https://img.shields.io/badge/SQLite-development-003B57?logo=sqlite&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Docker-4169E1?logo=postgresql&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
 ![pytest](https://img.shields.io/badge/pytest-tests-0A9EDC?logo=pytest&logoColor=white)
 ![uv](https://img.shields.io/badge/uv-package%20manager-DE5FE9)
 
 - **Python 3.13 o superior** para el entorno de ejecución.
 - **FastAPI** para las rutas REST y la documentación OpenAPI.
 - **SQLModel** para modelos, validación y persistencia con SQLAlchemy y Pydantic.
-- **SQLite** como base de datos de desarrollo.
+- **SQLite** como base de datos para la ejecución local y **PostgreSQL** al usar Docker Compose.
+- **Docker Compose** para ejecutar la API y PostgreSQL en contenedores.
 - **pytest** y **httpx2** para las pruebas.
 - **uv** para administrar el entorno y las dependencias.
 - **python-dotenv** para cargar variables desde `.env`.
@@ -64,11 +67,6 @@ erDiagram
 
 `OrderItem` es la entidad asociativa entre `Order` y `Product`: conserva la cantidad y el precio unitario aplicado cuando se creó el pedido. En la implementación actual, `price` y `price_unit` son enteros; no se declara una moneda en el modelo.
 
-## Requisitos
-
-- Python 3.13 o superior.
-- [uv](https://docs.astral.sh/uv/getting-started/installation/) instalado.
-
 ## Instalación y ejecución local
 
 Cloná el repositorio y entrá en su directorio:
@@ -107,6 +105,34 @@ Desde la raíz del proyecto:
 	 ```
 
 	 La API queda disponible en `http://127.0.0.1:8000`. La documentación interactiva de Swagger UI está en `/docs` y ReDoc en `/redoc`.
+
+## Ejecución con Docker
+
+Se requiere Docker Desktop o Docker Engine con el plugin de Docker Compose. Desde la raíz del proyecto, construí la imagen e iniciá la API junto con PostgreSQL:
+
+```bash
+docker compose up --build
+```
+
+Compose espera a que PostgreSQL esté saludable antes de iniciar la API. Al arrancar, la aplicación crea las tablas del modelo. La API queda disponible en `http://localhost:8000`; Swagger UI está en `/docs` y ReDoc en `/redoc`.
+
+Para dejar los servicios en segundo plano:
+
+```bash
+docker compose up --build -d
+```
+
+Podés consultar su estado y los logs con `docker compose ps` y `docker compose logs -f`. Para detenerlos sin borrar la base de datos, ejecutá:
+
+```bash
+docker compose down
+```
+
+PostgreSQL guarda sus datos en el volumen `postgres_data`, que persiste entre reinicios y recreaciones de los contenedores. `docker compose down -v` también elimina ese volumen y todos los datos guardados.
+
+Compose usa por defecto `nuvstock` como usuario y base de datos, y `nuvstock_dev` como contraseña. Son valores para desarrollo local; podés cambiarlos definiendo `POSTGRES_USER`, `POSTGRES_PASSWORD` y `POSTGRES_DB` en el entorno o en un archivo `.env`.
+
+Para cargar datos de ejemplo desde el contenedor, ejecutá `docker compose exec api python -m scripts.seed`. El seed borra y recrea las tablas de PostgreSQL, por lo que elimina los datos existentes.
 
 ## Probar la API
 

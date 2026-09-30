@@ -1,0 +1,27 @@
+services:
+  api:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: "postgresql+psycopg://${POSTGRES_USER:-nuvstock}:${POSTGRES_PASSWORD:-nuvstock_dev}@db:5432/${POSTGRES_DB:-nuvstock}"
+
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-nuvstock}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-nuvstock_dev}
+      POSTGRES_DB: ${POSTGRES_DB:-nuvstock}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

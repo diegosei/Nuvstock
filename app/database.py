@@ -7,9 +7,13 @@ from sqlmodel import Session, SQLModel, create_engine
 
 load_dotenv()
 
-sqlite_url = os.getenv("DATABASE_URL")
+database_url = os.getenv("DATABASE_URL")
 
-engine = create_engine(sqlite_url)
+connect_args = {}
+if database_url.startswith("sqlite"):
+    connect_args = {"check_same_thread": False}
+
+engine = create_engine(database_url, connect_args=connect_args)
 
 
 async def lifespan(app: FastAPI):
